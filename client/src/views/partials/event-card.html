@@ -1,0 +1,43 @@
+<!-- Reusable event card. Usage:
+     <event-card evt="event"></event-card>  (requires UtilService on the parent scope as util) -->
+<div class="event-card">
+  <div class="event-media">
+    <img ng-if="evt.event_image_url && !evt._imgFailed"
+         ng-src="src/assets/{{ evt.event_image_url }}"
+         ng-attr-alt="{{ evt.event_name }}"
+         loading="lazy"
+         ng-error="evt._imgFailed = true">
+    <div class="media-fallback" ng-if="!evt.event_image_url || evt._imgFailed">
+      {{ evt.event_name.charAt(0) }}
+    </div>
+    <span class="chip" ng-class="{ past: evt.status === 'Past' }">
+      {{ evt.status === 'Past' ? 'Past event' : (evt.status === 'Suspended' ? 'Suspended' : evt.category_name) }}
+    </span>
+  </div>
+
+  <div class="event-body">
+    <h3><a ng-href="event-detail.html?id={{ evt.event_id }}">{{ evt.event_name }}</a></h3>
+
+    <div class="event-meta">
+      <span><b>When</b>{{ util.formatDateTime(evt.event_date) }}</span>
+      <span><b>Where</b>{{ evt.location }}</span>
+      <span><b>Booked</b>{{ evt.registration_count }} registration(s) · {{ evt.tickets_sold }} ticket(s)</span>
+    </div>
+
+    <div>
+      <div class="progress"><i ng-style="{ width: evt.progress_percent + '%' }"></i></div>
+      <div class="muted" style="font-size:.78rem;margin-top:7px">
+        {{ util.moneyShort(evt.current_progress) }} of {{ util.moneyShort(evt.charity_goal) }} raised
+        ({{ evt.progress_percent }}%)
+      </div>
+    </div>
+
+    <div class="foot">
+      <span class="price">
+        {{ evt.ticket_price > 0 ? util.money(evt.ticket_price) : 'Free entry' }}
+        <small>{{ evt.ticket_price > 0 ? 'per ticket' : '' }}</small>
+      </span>
+      <a class="btn btn-primary btn-sm" ng-href="event-detail.html?id={{ evt.event_id }}">Details</a>
+    </div>
+  </div>
+</div>
