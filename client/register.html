@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="charityApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register for an Event | Community Hope Foundation</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body ng-controller="RegistrationController">
+
+  <site-header></site-header>
+
+  <!-- ===================== SUCCESS CONFIRMATION ===================== -->
+  <main class="container section" ng-if="confirmation">
+    <div class="card card-pad" style="max-width:720px;margin:0 auto;text-align:center">
+      <div class="brand-mark" style="margin:0 auto 16px;width:60px;height:60px;font-size:1.6rem">✓</div>
+      <h1 style="font-size:1.6rem">Registration confirmed</h1>
+      <p class="muted mt-8">{{ confirmationMessage }}</p>
+
+      <div class="card card-pad mt-24" style="text-align:left;background:#f9fbfe">
+        <dl class="kv" style="grid-template-columns:170px 1fr">
+          <dt>Reference number</dt>
+          <dd>#{{ confirmation.registration_id }}</dd>
+          <dt>Event</dt>
+          <dd>{{ confirmation.event_name }}</dd>
+          <dt>When</dt>
+          <dd>{{ util.formatDateTime(confirmation.event_date) }}</dd>
+          <dt>Where</dt>
+          <dd>{{ confirmation.location }}</dd>
+          <dt>Name</dt>
+          <dd>{{ confirmation.user_name }}</dd>
+          <dt>Email</dt>
+          <dd>{{ confirmation.user_email }}</dd>
+          <dt>Tickets</dt>
+          <dd>{{ confirmation.ticket_quantity }}</dd>
+          <dt>Total paid</dt>
+          <dd style="color:var(--accent-2)">{{ util.money(confirmation.total_amount) }}</dd>
+          <dt>Registered at</dt>
+          <dd>{{ util.formatDateTime(confirmation.registration_date) }}</dd>
+        </dl>
+      </div>
+
+      <div class="form-actions" style="justify-content:center">
+        <a class="btn btn-primary" ng-href="event-detail.html?id={{ confirmation.event_id }}">
+          Back to the event
+        </a>
+        <a class="btn btn-outline" href="events.html">Browse more events</a>
+        <button class="btn btn-outline" type="button" ng-click="registerAnother()">Register someone else</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== LOADING / ERROR ===================== -->
+  <div class="spinner" ng-if="loading"></div>
+
+  <main class="container section" ng-if="loadError && !loading">
+    <div class="alert alert-danger">{{ loadError }}</div>
+    <a class="btn btn-outline mt-16" href="events.html">Back to all events</a>
+  </main>
+
+  <!-- ===================== REGISTRATION FORM ===================== -->
+  <main class="container section" ng-if="event && !loading && !confirmation">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Step 2 of 2</div>
+        <h1>Register for this event</h1>
+        <p>Enter your details below. One email address can register only once per event.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- -------------------------- form -------------------------- -->
+      <div class="card card-pad">
+        <form name="regForm" ng-submit="submit(regForm.$valid)" novalidate>
+
+          <h2 style="font-size:1.1rem" class="mb-16">Your details</h2>
+
+          <div class="form-grid">
+            <div class="field full">
+              <label for="rName">Full name <span class="req">*</span></label>
+              <input id="rName" name="user_name" type="text" ng-model="form.user_name"
+                     required minlength="2" maxlength="120" placeholder="e.g. Amelia Nguyen"
+                     ng-class="{ 'ng-invalid': fieldErrors.user_name }">
+              <span class="err" ng-if="fieldErrors.user_name">{{ fieldErrors.user_name }}</span>
+            </div>
+
+            <div class="field">
+              <label for="rEmail">Email address <span class="req">*</span></label>
+              <input id="rEmail" name="user_email" type="email" ng-model="form.user_email"
+                     required placeholder="name@example.com">
+              <span class="err" ng-if="fieldErrors.user_email">{{ fieldErrors.user_email }}</span>
+            </div>
+
+            <div class="field">
+              <label for="rPhone">Contact number <span class="req">*</span></label>
+              <input id="rPhone" name="user_phone" type="tel" ng-model="form.user_phone"
+                     required placeholder="0412 345 678">
+              <span class="err" ng-if="fieldErrors.user_phone">{{ fieldErrors.user_phone }}</span>
+            </div>
+
+            <div class="field">
+              <label for="rQty">Number of tickets <span class="req">*</span></label>
+              <input id="rQty" name="ticket_quantity" type="number" ng-model="form.ticket_quantity"
+                     min="1" max="10" step="1" required>
+              <span class="hint">Between 1 and {{ maxTickets() }} ticket(s) for this event.</span>
+              <span class="err" ng-if="fieldErrors.ticket_quantity">{{ fieldErrors.ticket_quantity }}</span>
+            </div>
+
+            <div class="field">
+              <label>Total</label>
+              <div style="padding:10px 12px;border:1px solid var(--rule);border-radius:0;background:var(--paper-deep);font-weight:800;color:var(--ink)">
+                {{ util.money(ticketTotal()) }}
+              </div>
+              <span class="hint">{{ form.ticket_quantity || 0 }} × {{ util.money(event.ticket_price) }}</span>
+            </div>
+
+            <div class="field full">
+              <label for="rNotes">Notes (optional)</label>
+              <textarea id="rNotes" name="notes" ng-model="form.notes" maxlength="255"
+                        placeholder="Accessibility requirements, group name, dietary needs..."></textarea>
+            </div>
+          </div>
+
+          <div class="alert alert-danger mt-16" ng-if="submitError">
+            <span>⚠️</span><span>{{ submitError }}</span>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-accent" type="submit" ng-disabled="submitting">
+              {{ submitting ? 'Submitting…' : 'Confirm registration' }}
+            </button>
+            <a class="btn btn-outline" ng-href="event-detail.html?id={{ event.event_id }}">Cancel</a>
+          </div>
+
+          <p class="muted mt-16" style="font-size:.78rem">
+            Fields marked <span class="req" style="color:var(--accent)">*</span> are required.
+            Validation runs in the browser first, then again on the server.
+          </p>
+        </form>
+      </div>
+
+      <!-- ---------------------- event summary ---------------------- -->
+      <div class="stack" style="align-self:start">
+        <div class="card" style="overflow:hidden">
+          <div class="event-media" style="aspect-ratio:16/9">
+            <img ng-if="event.event_image_url && !imgFailed" ng-src="src/assets/{{ event.event_image_url }}"
+                 alt="{{ event.event_name }}" ng-error="imgFailed = true">
+            <div class="media-fallback" ng-if="!event.event_image_url || imgFailed">{{ event.event_name.charAt(0) }}</div>
+          </div>
+          <div class="card-pad">
+            <span class="tag tag-info">{{ event.category_name }}</span>
+            <h2 style="font-size:1.15rem;margin-top:10px">{{ event.event_name }}</h2>
+            <p class="muted" style="font-size:.88rem;margin-top:6px">{{ event.description }}</p>
+
+            <dl class="kv mt-16" style="grid-template-columns:110px 1fr">
+              <dt>When</dt><dd>{{ util.formatDateTime(event.event_date) }}</dd>
+              <dt>Where</dt><dd>{{ event.location }}</dd>
+              <dt>Organiser</dt><dd>{{ event.org_name }}</dd>
+              <dt>Price</dt><dd>{{ event.ticket_price > 0 ? util.money(event.ticket_price) : 'Free' }}</dd>
+              <dt>Seats left</dt><dd>{{ event.seats_remaining }} of {{ event.capacity }}</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="alert alert-info" style="font-size:.84rem">
+          <span>ℹ️</span>
+          <span>Submitting this form calls <code>POST /api/registrations</code>, which inserts one row into the
+            <code>registrations</code> table with your details, the ticket quantity, the calculated total and the
+            current timestamp.</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <site-footer></site-footer>
+
+  <script src="src/js/vendor/angular.min.js"></script>
+  <script src="src/js/vendor/angular-route.min.js"></script>
+  <script src="src/js/app.config.js"></script>
+  <script src="src/js/services/event.service.js"></script>
+  <script src="src/js/directives/helpers.js"></script>
+  <script src="src/js/controllers/nav.controller.js"></script>
+  <script src="src/js/controllers/registration.controller.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="charityApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Categories | Community Hope Foundation</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body ng-controller="CategoriesController">
+
+  <site-header></site-header>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Browse by type</div>
+          <h1>Event categories</h1>
+          <p>Categories come from the <code>categories</code> table and are linked to every event through a
+            foreign key. Counts and totals are aggregated in MySQL.</p>
+        </div>
+        <a class="btn btn-outline" href="search.html">Search with filters</a>
+      </div>
+
+      <div class="spinner" ng-if="loading"></div>
+      <div class="alert alert-danger" ng-if="error">{{ error }}</div>
+
+      <div class="grid-3">
+        <div class="card card-pad" ng-repeat="cat in categories">
+          <div class="row-between" style="align-items:flex-start">
+            <div class="brand-mark">{{ cat.category_name.charAt(0) }}</div>
+            <div style="text-align:right">
+              <div style="font-weight:800;color:var(--ink);font-size:1.15rem">{{ cat.event_count }}</div>
+              <div class="muted" style="font-size:.74rem">event(s)</div>
+            </div>
+          </div>
+          <h3 style="margin-top:14px;font-size:1.05rem">{{ cat.category_name }}</h3>
+          <p class="muted mt-8" style="font-size:.86rem;min-height:42px">
+            {{ cat.description || 'No description available.' }}
+          </p>
+          <a class="btn btn-outline btn-sm mt-16" ng-href="search.html">Find events</a>
+        </div>
+      </div>
+
+      <div class="card card-pad mt-32">
+        <h2 style="font-size:1.1rem" class="mb-8">Why categories matter</h2>
+        <p class="muted" style="font-size:.9rem">
+          Each event stores a <code>category_id</code> foreign key and the search endpoint can filter on it.
+          If an administrator tries to delete a category that is still used by an event, the API refuses the
+          request with an HTTP 409 Conflict response so the data stays consistent.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <site-footer></site-footer>
+
+  <script src="src/js/vendor/angular.min.js"></script>
+  <script src="src/js/vendor/angular-route.min.js"></script>
+  <script src="src/js/app.config.js"></script>
+  <script src="src/js/services/event.service.js"></script>
+  <script src="src/js/directives/helpers.js"></script>
+  <script src="src/js/controllers/nav.controller.js"></script>
+  <script src="src/js/controllers/categories.controller.js"></script>
+</body>
+</html>

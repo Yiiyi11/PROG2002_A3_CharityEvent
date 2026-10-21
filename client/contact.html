@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="charityApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us | Community Hope Foundation</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body ng-controller="ContactController">
+
+  <site-header></site-header>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">We are here to help</div>
+          <h1>Contact us</h1>
+          <p>Questions about a registration, a refund or sponsoring an event? Send us a message and the team will
+            respond within two business days.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+
+        <!-- ----------------------------- form ----------------------------- -->
+        <div class="card card-pad">
+          <div class="alert alert-success" ng-if="sent">
+            <span>✓</span>
+            <span>Thank you {{ form.name }} — your message has been recorded. We will reply to
+              {{ form.email }} shortly.</span>
+          </div>
+          <div class="alert alert-danger" ng-if="error">
+            <span>⚠️</span><span>{{ error }}</span>
+          </div>
+
+          <form name="contactForm" ng-submit="send(contactForm.$valid)" ng-if="!sent" novalidate>
+            <div class="form-grid">
+              <div class="field">
+                <label for="cName">Your name <span class="req">*</span></label>
+                <input id="cName" name="name" type="text" ng-model="form.name" required minlength="2" maxlength="80">
+                <span class="err" ng-if="contactForm.name.$touched && contactForm.name.$error.required">
+                  Please enter your name.
+                </span>
+              </div>
+
+              <div class="field">
+                <label for="cEmail">Email address <span class="req">*</span></label>
+                <input id="cEmail" name="email" type="email" ng-model="form.email" required>
+                <span class="err" ng-if="contactForm.email.$touched && contactForm.email.$invalid">
+                  Please enter a valid email address.
+                </span>
+              </div>
+
+              <div class="field full">
+                <label for="cSubject">Subject</label>
+                <select id="cSubject" name="subject" ng-model="form.subject"
+                        ng-options="s as s for s in subjects"></select>
+              </div>
+
+              <div class="field full">
+                <label for="cMessage">Message <span class="req">*</span></label>
+                <textarea id="cMessage" name="message" ng-model="form.message" required
+                          minlength="20" maxlength="1000"
+                          placeholder="Please include your registration reference number if your question is about a booking."></textarea>
+                <span class="hint">{{ form.message.length || 0 }} / 1000 characters (minimum 20)</span>
+                <span class="err" ng-if="contactForm.message.$touched && contactForm.message.$error.minlength">
+                  Your message needs at least 20 characters.
+                </span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Send message</button>
+              <button class="btn btn-outline" type="button" ng-click="reset()">Clear</button>
+            </div>
+          </form>
+
+          <div ng-if="sent">
+            <button class="btn btn-outline" type="button" ng-click="reset()">Send another message</button>
+          </div>
+        </div>
+
+        <!-- --------------------------- contact info --------------------------- -->
+        <div class="stack" style="align-self:start">
+          <div class="card card-pad">
+            <h2 style="font-size:1.1rem" class="mb-8">Contact details</h2>
+            <dl class="kv" style="grid-template-columns:110px 1fr">
+              <dt>Email</dt><dd>hope@charity.org</dd>
+              <dt>Phone</dt><dd>0400 111 222</dd>
+              <dt>Office</dt><dd>Level 3, 120 George Street, Brisbane QLD 4000</dd>
+              <dt>Hours</dt><dd>Monday – Friday, 9:00 am – 5:00 pm AEST</dd>
+            </dl>
+          </div>
+
+          <div class="card card-pad">
+            <h2 style="font-size:1.1rem" class="mb-8">Frequently asked</h2>
+            <p class="mt-8"><strong>Can I register twice for the same event?</strong></p>
+            <p class="muted" style="font-size:.88rem">No. The database enforces a unique constraint on the event and
+              email pair, so a second attempt is rejected with a clear message.</p>
+
+            <p class="mt-16"><strong>How many tickets can I buy?</strong></p>
+            <p class="muted" style="font-size:.88rem">Up to 10 per registration, and never more than the seats that
+              remain for that event.</p>
+
+            <p class="mt-16"><strong>Where does the weather data come from?</strong></p>
+            <p class="muted" style="font-size:.88rem">Open-Meteo, a free public API that needs no key. Forecasts use
+              the latitude and longitude stored for each event venue.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <site-footer></site-footer>
+
+  <script src="src/js/vendor/angular.min.js"></script>
+  <script src="src/js/vendor/angular-route.min.js"></script>
+  <script src="src/js/app.config.js"></script>
+  <script src="src/js/services/event.service.js"></script>
+  <script src="src/js/directives/helpers.js"></script>
+  <script src="src/js/controllers/nav.controller.js"></script>
+  <script src="src/js/controllers/contact.controller.js"></script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="charityApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Charity Events | Community Hope Foundation</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body ng-controller="SearchController">
+
+  <site-header></site-header>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Filter the database</div>
+          <h1>Search charity events</h1>
+          <p>Filters are sent to <code>GET /api/events/search</code> and applied inside MySQL, not in the browser.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- ------------------------------ form ------------------------------ -->
+        <div class="card card-pad">
+          <h2 style="font-size:1.15rem" class="mb-16">Search filters</h2>
+
+          <form name="searchForm" ng-submit="search()" novalidate>
+            <div class="form-grid">
+
+              <div class="field full">
+                <label for="qKeyword">Keyword</label>
+                <input id="qKeyword" name="keyword" type="search" ng-model="filters.keyword"
+                       placeholder="e.g. fun run, gala, acoustic">
+                <span class="hint">Matches the event name or description.</span>
+              </div>
+
+              <div class="field">
+                <label for="qDate">Event date</label>
+                <input id="qDate" name="date" type="date" ng-model="filters.date">
+                <span class="hint">Leave empty for any date.</span>
+              </div>
+
+              <div class="field">
+                <label for="qLocation">Location</label>
+                <input id="qLocation" name="location" type="text" ng-model="filters.location"
+                       placeholder="Brisbane, Gold Coast...">
+                <span class="hint">Matches the venue or the organisation name.</span>
+              </div>
+
+              <div class="field">
+                <label for="qCategory">Category</label>
+                <select id="qCategory" name="category_id" ng-model="filters.category_id"
+                        ng-options="c.category_id as c.category_name for c in categories">
+                  <option value="">Any category</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="qSort">Sort by date</label>
+                <select id="qSort" name="sort" ng-model="filters.sort">
+                  <option value="date_asc">Soonest first</option>
+                  <option value="date_desc">Latest first</option>
+                </select>
+              </div>
+
+              <div class="field full">
+                <label style="display:flex;align-items:center;gap:8px;font-weight:600">
+                  <input type="checkbox" name="include_past" ng-model="filters.include_past" style="width:auto">
+                  Include events that have already taken place
+                </label>
+              </div>
+            </div>
+
+            <div class="alert alert-danger mt-16" ng-if="validationError">
+              <span>⚠️</span><span>{{ validationError }}</span>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit" ng-disabled="loading">
+                {{ loading ? 'Searching…' : 'Search events' }}
+              </button>
+              <button class="btn btn-outline" type="button" ng-click="reset()">Clear filters</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ---------------------------- guidance ---------------------------- -->
+        <div class="card card-pad" style="align-self:start">
+          <h2 style="font-size:1.15rem" class="mb-16">How the search works</h2>
+          <ol class="muted" style="padding-left:18px;font-size:.9rem;line-height:1.9">
+            <li>The form builds a query string (<code>?date=&amp;location=&amp;category_id=</code>).</li>
+            <li>The Express endpoint adds one SQL condition per supplied filter.</li>
+            <li>Values are bound as parameters, so the query cannot be injected.</li>
+            <li>Suspended events are always excluded from public results.</li>
+          </ol>
+
+          <div class="alert alert-info mt-16" style="font-size:.84rem">
+            <span>ℹ️</span>
+            <span>Dates are compared with <code>DATE(event_date) = ?</code>, so a single day matches every event
+              happening on that day regardless of the time.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ------------------------------ results ------------------------------ -->
+      <div class="mt-32">
+        <div class="row-between mb-16">
+          <h2 style="font-size:1.2rem">Results</h2>
+          <span class="tag tag-info" ng-if="searched">{{ results.length }} match(es)</span>
+        </div>
+
+        <div class="spinner" ng-if="loading"></div>
+        <div class="alert alert-danger" ng-if="error">{{ error }}</div>
+
+        <div class="event-grid" ng-if="results.length">
+          <event-card ng-repeat="event in results" evt="event"></event-card>
+        </div>
+
+        <div class="empty-state" ng-if="searched && !loading && !results.length && !error">
+          <div class="ico">🔍</div>
+          <p>No events match those filters. Try widening the date range or clearing the location.</p>
+        </div>
+
+        <div class="empty-state" ng-if="!searched && !loading">
+          <div class="ico">🎯</div>
+          <p>Set your filters above and press <strong>Search events</strong> to query the database.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <site-footer></site-footer>
+  <back-to-top></back-to-top>
+
+  <script src="src/js/vendor/angular.min.js"></script>
+  <script src="src/js/vendor/angular-route.min.js"></script>
+  <script src="src/js/app.config.js"></script>
+  <script src="src/js/services/event.service.js"></script>
+  <script src="src/js/directives/helpers.js"></script>
+  <script src="src/js/directives/event-card.js"></script>
+  <script src="src/js/controllers/nav.controller.js"></script>
+  <script src="src/js/controllers/search.controller.js"></script>
+</body>
+</html>

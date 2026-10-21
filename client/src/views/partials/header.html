@@ -1,0 +1,22 @@
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">CHF</span>
+      <span>
+        Community Hope Foundation
+        <small>Charity events · Queensland</small>
+      </span>
+    </a>
+
+    <button class="nav-toggle" type="button" ng-click="toggleMenu()" aria-label="Toggle navigation">
+      {{ menuOpen ? 'Close' : 'Menu' }}
+    </button>
+
+    <nav class="nav-links" ng-class="{ open: menuOpen }">
+      <a ng-repeat="item in navItems"
+         ng-href="{{ item.file }}"
+         ng-class="{ active: isActive(item) }">{{ item.label }}</a>
+      <a class="nav-admin" href="/admin/">Staff</a>
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="charityApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Hope Foundation | Charity Events</title>
+  <meta name="description" content="Browse and register for charity runs, gala dinners, auctions and concerts run by the Community Hope Foundation.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body ng-controller="HomeController">
+
+  <site-header></site-header>
+
+  <!-- ============================= HERO ============================= -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <div class="eyebrow">Season 2026 · Programme of events</div>
+        <h1>Turn a ticket into real change</h1>
+        <p class="lead">
+          Community Hope Foundation runs fun runs, gala dinners, silent auctions and charity
+          concerts across Queensland and northern New South Wales. Browse the programme,
+          check the weather at the venue and reserve your seats in under a minute.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="events.html">Browse the programme</a>
+          <a class="btn btn-outline" href="search.html">Search by date or place</a>
+        </div>
+      </div>
+
+      <aside class="hero-side">
+        <div class="eyebrow">The ledger</div>
+        <div class="hero-stats" ng-if="stats">
+          <div class="hero-stat">
+            <b count-up="{{ stats.events.total_events }}">0</b>
+            <span>Events listed</span>
+          </div>
+          <div class="hero-stat">
+            <b count-up="{{ stats.registrations.total_registrations }}">0</b>
+            <span>Registrations recorded</span>
+          </div>
+          <div class="hero-stat">
+            <b count-up="{{ stats.registrations.total_tickets }}">0</b>
+            <span>Tickets purchased</span>
+          </div>
+          <div class="hero-stat">
+            <b>{{ util.moneyShort(stats.events.total_raised) }}</b>
+            <span>Raised so far</span>
+          </div>
+        </div>
+        <div class="spinner" ng-if="loading && !stats"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ======================= NEXT EVENT + WEATHER ======================= -->
+  <section class="section" ng-if="nextEvent">
+    <div class="container">
+      <div class="grid-2">
+
+        <div class="card card-pad">
+          <div class="row-between mb-16">
+            <div>
+              <div class="eyebrow">Next event</div>
+              <h2 style="margin-top:4px">{{ nextEvent.event_name }}</h2>
+            </div>
+            <span class="tag tag-active">{{ nextEvent.category_name }}</span>
+          </div>
+
+          <dl class="kv">
+            <dt>When</dt>
+            <dd>{{ util.formatDateTime(nextEvent.event_date) }} ({{ util.relative(nextEvent.event_date) }})</dd>
+            <dt>Where</dt>
+            <dd>{{ nextEvent.location }}</dd>
+            <dt>Tickets</dt>
+            <dd>{{ nextEvent.ticket_price > 0 ? util.money(nextEvent.ticket_price) + ' per ticket' : 'Free entry' }}
+                · {{ nextEvent.seats_remaining }} of {{ nextEvent.capacity }} seats left</dd>
+            <dt>Fundraising</dt>
+            <dd>{{ util.moneyShort(nextEvent.current_progress) }} of {{ util.moneyShort(nextEvent.charity_goal) }}
+                ({{ nextEvent.progress_percent }}%)</dd>
+          </dl>
+
+          <div class="progress mt-16"><i ng-style="{ width: nextEvent.progress_percent + '%' }"></i></div>
+
+          <div class="form-actions">
+            <a class="btn btn-primary" ng-href="event-detail.html?id={{ nextEvent.event_id }}">Event details</a>
+            <a class="btn btn-accent" ng-href="register.html?id={{ nextEvent.event_id }}">Register now</a>
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <div class="eyebrow">Weather at the venue</div>
+          <h2 style="margin-top:4px;font-size:1.25rem">Open-Meteo forecast</h2>
+
+          <div class="spinner" ng-if="weatherError === null && !nextEventWeather"></div>
+
+          <div ng-if="nextEventWeather" class="mt-16">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="font-size:3rem;line-height:1">{{ nextEventWeather.icon }}</div>
+              <div>
+                <div style="font-size:1.9rem;font-weight:800;color:var(--ink)">
+                  {{ nextEventWeather.max }}°<small style="font-size:1rem;color:var(--ink-faint)"> / {{ nextEventWeather.min }}°</small>
+                </div>
+                <div class="muted" style="font-size:.88rem">{{ nextEventWeather.description }}</div>
+              </div>
+            </div>
+            <dl class="kv mt-16" style="grid-template-columns:130px 1fr">
+              <dt>Forecast day</dt><dd>{{ nextEventWeather.weekday }} {{ nextEventWeather.shortDate }}</dd>
+              <dt>Chance of rain</dt>
+              <dd>{{ nextEventWeather.rainChance !== null ? nextEventWeather.rainChance + '%' : 'Not available' }}</dd>
+              <dt>Max wind</dt>
+              <dd>{{ nextEventWeather.wind !== null ? nextEventWeather.wind + ' km/h' : 'Not available' }}</dd>
+            </dl>
+            <a class="btn btn-outline btn-sm mt-16" href="weather.html">See the 7-day forecast</a>
+          </div>
+
+          <div class="alert alert-warning mt-16" ng-if="weatherError">{{ weatherError }}</div>
+          <p class="muted mt-16" style="font-size:.8rem">
+            Data: Open-Meteo.com (WMO weather codes translated into plain English).
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= UPCOMING EVENTS ========================= -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">What is coming up</div>
+          <h2>Upcoming charity events</h2>
+          <p>Every event is stored in MySQL and served through the Express REST API.</p>
+        </div>
+        <a class="btn btn-outline" href="events.html">View all events →</a>
+      </div>
+
+      <div class="spinner" ng-if="loading && !upcoming.length"></div>
+      <div class="alert alert-danger" ng-if="error">{{ error }}</div>
+
+      <div class="event-grid">
+        <event-card ng-repeat="event in upcoming" evt="event"></event-card>
+      </div>
+
+      <div class="empty-state" ng-if="!loading && !error && !upcoming.length">
+        <div class="ico">📅</div>
+        <p>No upcoming events have been published yet. Please check back soon.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ HOW IT WORKS ============================ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">How it works</div>
+          <h2>Three steps from interest to impact</h2>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card card-pad">
+          <div class="brand-mark mb-16">1</div>
+          <h3>Find your event</h3>
+          <p class="muted mt-8">Search by date, location, category or keyword. Results are filtered in MySQL
+            through the <code>/api/events/search</code> endpoint.</p>
+        </div>
+        <div class="card card-pad">
+          <div class="brand-mark mb-16">2</div>
+          <h3>Reserve your tickets</h3>
+          <p class="muted mt-8">Choose how many tickets you need, enter your contact details and confirm.
+            Every registration is recorded with a timestamp.</p>
+        </div>
+        <div class="card card-pad">
+          <div class="brand-mark mb-16">3</div>
+          <h3>Show up and give back</h3>
+          <p class="muted mt-8">Check the venue forecast, arrive on the day and know that the funds go straight
+            to the charity partner running the event.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== ANGULARJS ROUTED VIEW ====================== -->
+  <!-- ngRoute renders /#!/events (default) or /#!/weather in this container. -->
+  <section class="section" style="background:#fff;border-top:1px solid var(--rule)">
+    <div ng-view></div>
+  </section>
+
+  <site-footer></site-footer>
+  <back-to-top></back-to-top>
+
+  <!-- ============================= SCRIPTS ============================= -->
+  <script src="src/js/vendor/angular.min.js"></script>
+  <script src="src/js/vendor/angular-route.min.js"></script>
+  <script src="src/js/app.config.js"></script>
+  <script src="src/js/services/event.service.js"></script>
+  <script src="src/js/services/weather.service.js"></script>
+  <script src="src/js/directives/helpers.js"></script>
+  <script src="src/js/directives/event-card.js"></script>
+  <script src="src/js/controllers/nav.controller.js"></script>
+  <script src="src/js/controllers/home.controller.js"></script>
+  <script src="src/js/controllers/event-list.controller.js"></script>
+  <script src="src/js/controllers/route-views.controller.js"></script>
+</body>
+</html>

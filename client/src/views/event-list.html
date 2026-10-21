@@ -1,0 +1,27 @@
+<!-- ===========================================================================
+     ngRoute view: /#!/events
+     Compact upcoming-event list rendered inside the index.html shell. It uses
+     the same EventService and <event-card> component as the standalone page.
+     =========================================================================== -->
+<div class="container">
+  <div class="section-head">
+    <div>
+      <div class="eyebrow">AngularJS route</div>
+      <h2>Upcoming events</h2>
+      <p>This view is rendered by ngRoute at <code>index.html#!/events</code> without a page reload.</p>
+    </div>
+    <a class="btn btn-outline" href="events.html">Open the full event page</a>
+  </div>
+
+  <div class="spinner" ng-if="loading"></div>
+  <div class="alert alert-danger" ng-if="error">{{ error }}</div>
+
+  <div class="event-grid">
+    <event-card ng-repeat="event in events" evt="event"></event-card>
+  </div>
+
+  <div class="empty-state" ng-if="!loading && !events.length && !error">
+    <div class="ico">📅</div>
+    <p>No upcoming events at the moment.</p>
+  </div>
+</div>

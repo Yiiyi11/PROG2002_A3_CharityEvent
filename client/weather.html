@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="charityApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Venue Weather Forecast | Community Hope Foundation</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body ng-controller="WeatherController">
+
+  <site-header></site-header>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">External API · Open-Meteo</div>
+          <h1>Venue weather forecast</h1>
+          <p>Choose an event and see the seven day forecast for its coordinates. The request is made directly
+            from the browser to <code>api.open-meteo.com</code>, which requires no API key or registration.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+
+        <!-- ---------------------- event picker ---------------------- -->
+        <div class="card card-pad">
+          <h2 style="font-size:1.1rem" class="mb-16">Upcoming events</h2>
+
+          <div class="spinner" ng-if="loadingEvents"></div>
+          <div class="alert alert-danger" ng-if="error">{{ error }}</div>
+
+          <div class="stack">
+            <button class="card card-pad" type="button" ng-repeat="evt in events"
+                    ng-click="select(evt)"
+                    style="text-align:left;cursor:pointer;border-color:{{ selected.event_id === evt.event_id ? '#2f6fb2' : 'var(--rule)' }};box-shadow:{{ selected.event_id === evt.event_id ? '0 0 0 3px rgba(47,111,178,.14)' : 'none' }}">
+              <div class="row-between">
+                <strong style="color:var(--ink)">{{ evt.event_name }}</strong>
+                <span class="tag tag-info">{{ evt.category_name }}</span>
+              </div>
+              <div class="muted" style="font-size:.84rem;margin-top:4px">
+                {{ util.formatDate(evt.event_date) }} · {{ evt.location }}
+              </div>
+              <div class="muted" style="font-size:.78rem">
+                Coordinates: {{ evt.latitude }}, {{ evt.longitude }}
+              </div>
+            </button>
+          </div>
+
+          <div class="empty-state" ng-if="!loadingEvents && !events.length && !error">
+            <div class="ico">📅</div>
+            <p>No upcoming events to forecast.</p>
+          </div>
+        </div>
+
+        <!-- ---------------------- forecast ---------------------- -->
+        <div class="stack" style="align-self:start">
+          <div class="card card-pad" ng-if="selected">
+            <div class="row-between mb-8">
+              <div>
+                <h2 style="font-size:1.1rem">{{ selected.event_name }}</h2>
+                <p class="muted" style="font-size:.84rem">{{ selected.location }}</p>
+              </div>
+              <span class="tag tag-info">{{ forecast ? forecast.timezone : 'Australia/Sydney' }}</span>
+            </div>
+
+            <div class="spinner" ng-if="loadingWeather"></div>
+            <div class="alert alert-warning" ng-if="weatherError">{{ weatherError }}</div>
+
+            <div ng-if="eventDay && !loadingWeather" class="alert alert-success mt-16">
+              <span>🌤️</span>
+              <span>
+                On the event day (<strong>{{ eventDay.weekday }} {{ eventDay.shortDate }}</strong>) expect
+                <strong>{{ eventDay.description.toLowerCase() }}</strong> with a high of {{ eventDay.max }}°C
+                and a low of {{ eventDay.min }}°C.
+              </span>
+            </div>
+            <div ng-if="!eventDay && forecast && !loadingWeather" class="alert alert-info mt-16">
+              <span>ℹ️</span><span>The event is more than seven days away, so only the coming week is available.</span>
+            </div>
+
+            <div class="weather-strip mt-16" ng-if="forecast && !loadingWeather">
+              <div class="weather-day" ng-repeat="day in forecast.days"
+                   ng-class="{ today: eventDay && day.date === eventDay.date }">
+                <div class="d">{{ day.weekday }}</div>
+                <div class="d" style="font-weight:600;text-transform:none;letter-spacing:0">{{ day.shortDate }}</div>
+                <div class="ico">{{ day.icon }}</div>
+                <div class="t">{{ day.max }}° <small>/ {{ day.min }}°</small></div>
+                <div class="desc">{{ day.description }}</div>
+                <div class="desc" ng-if="day.rainChance !== null">💧 {{ day.rainChance }}%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card card-pad">
+            <h3 style="font-size:1rem" class="mb-8">WMO weather codes</h3>
+            <p class="muted" style="font-size:.84rem">
+              Open-Meteo returns a numeric code. The table below (from the assessment brief) is used to translate
+              each code into the description shown above.
+            </p>
+            <div class="table-wrap mt-16">
+              <table class="data">
+                <thead><tr><th>Code</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr ng-repeat="row in wmoTable">
+                    <td><code>{{ row.code }}</code></td>
+                    <td>{{ row.text }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-pad mt-32">
+        <h3 style="font-size:1rem" class="mb-8">The request that is sent</h3>
+        <pre style="background:#0f2237;color:#d7e6f5;padding:16px;border-radius:0;overflow-x:auto;font-size:.8rem;line-height:1.7">https://api.open-meteo.com/v1/forecast
+    ?latitude={{ selected.latitude }}&amp;longitude={{ selected.longitude }}
+    &amp;daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max
+    &amp;timezone=Australia%2FSydney
+    &amp;forecast_days=7</pre>
+        <p class="muted mt-8" style="font-size:.8rem">
+          Latitude and longitude are stored on the <code>events</code> table, which is why the schema had to be
+          extended for this optional part of the assessment.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <site-footer></site-footer>
+
+  <script src="src/js/vendor/angular.min.js"></script>
+  <script src="src/js/vendor/angular-route.min.js"></script>
+  <script src="src/js/app.config.js"></script>
+  <script src="src/js/services/event.service.js"></script>
+  <script src="src/js/services/weather.service.js"></script>
+  <script src="src/js/directives/helpers.js"></script>
+  <script src="src/js/controllers/nav.controller.js"></script>
+  <script src="src/js/controllers/weather.controller.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="charityApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us | Community Hope Foundation</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body ng-controller="AboutController">
+
+  <site-header></site-header>
+
+  <section class="hero" style="padding:56px 0 62px">
+    <div class="container">
+      <div class="eyebrow">Who we are</div>
+      <h1>Small events, measurable community impact</h1>
+      <p class="lead">
+        We are a volunteer-run charity collective working with three partner organisations across
+        Queensland and northern New South Wales. This platform is the booking system that makes
+        those events possible.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Partner organisations</div>
+          <h2>Charities behind the events</h2>
+          <p>Loaded from <code>GET /api/organisations</code> with aggregated event counts and funds raised.</p>
+        </div>
+      </div>
+
+      <div class="spinner" ng-if="loading"></div>
+      <div class="alert alert-danger" ng-if="error">{{ error }}</div>
+
+      <div class="grid-3">
+        <div class="card card-pad" ng-repeat="org in organisations">
+          <div class="brand-mark mb-16">{{ org.org_name.charAt(0) }}</div>
+          <h3 style="font-size:1.05rem">{{ org.org_name }}</h3>
+          <p class="muted mt-8" style="font-size:.88rem;min-height:66px">{{ org.mission }}</p>
+          <div class="row-between mt-16" style="font-size:.84rem">
+            <span class="muted">{{ org.event_count }} event(s)</span>
+            <strong style="color:var(--accent-2)">{{ org.total_raised | currency:'$':0 }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:#fff;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">PROG2002 Assessment 3</div>
+          <h2>The development team</h2>
+          <p>This website was built by a two-person team. Work was committed to GitHub continuously, with each
+            commit describing the specific change made.</p>
+        </div>
+        <a class="btn btn-outline" href="https://github.com/Yiiyi11/PROG2002_A3_CharityEvent" target="_blank" rel="noopener">
+          View repository
+        </a>
+      </div>
+
+      <div class="grid-2">
+        <div class="card card-pad" ng-repeat="member in team">
+          <div style="display:flex;gap:16px;align-items:center">
+            <div class="avatar" style="width:58px;height:58px;font-size:1.05rem">{{ member.initials }}</div>
+            <div>
+              <h3 style="font-size:1.05rem">{{ member.name }}</h3>
+              <p class="muted" style="font-size:.84rem">GitHub: &#64;{{ member.github }}</p>
+            </div>
+          </div>
+          <div class="tag tag-info mt-16">{{ member.role }}</div>
+          <p class="muted mt-8" style="font-size:.88rem">{{ member.focus }}</p>
+        </div>
+      </div>
+
+      <div class="card card-pad mt-24">
+        <h3 style="font-size:1.05rem" class="mb-8">Technology stack</h3>
+        <div class="grid-3 mt-16" style="gap:14px">
+          <div>
+            <strong style="color:var(--ink)">Server side</strong>
+            <p class="muted" style="font-size:.86rem">Node.js 18, Express, mysql2 connection pool, RESTful API with
+              full CRUD and parameterised SQL.</p>
+          </div>
+          <div>
+            <strong style="color:var(--ink)">Client side</strong>
+            <p class="muted" style="font-size:.86rem">HTML5, CSS3, JavaScript, AngularJS 1.8 controllers, services,
+              directives and two single-page applications.</p>
+          </div>
+          <div>
+            <strong style="color:var(--ink)">Data and APIs</strong>
+            <p class="muted" style="font-size:.86rem">MySQL 8 relational schema with foreign keys, plus the external
+              Open-Meteo weather API.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <site-footer></site-footer>
+
+  <script src="src/js/vendor/angular.min.js"></script>
+  <script src="src/js/vendor/angular-route.min.js"></script>
+  <script src="src/js/app.config.js"></script>
+  <script src="src/js/services/event.service.js"></script>
+  <script src="src/js/directives/helpers.js"></script>
+  <script src="src/js/controllers/nav.controller.js"></script>
+  <script src="src/js/controllers/about.controller.js"></script>
+</body>
+</html>

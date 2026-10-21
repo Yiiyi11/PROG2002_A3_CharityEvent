@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="charityApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Charity Events | Community Hope Foundation</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body ng-controller="EventListController">
+
+  <site-header></site-header>
+
+  <section class="section" style="padding-bottom:26px">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Event directory</div>
+          <h1>All charity events</h1>
+          <p>Every non-suspended event returned by <code>GET /api/events/home</code>, grouped into upcoming and past.</p>
+        </div>
+        <a class="btn btn-accent" href="search.html">Advanced search</a>
+      </div>
+
+      <!-- In-browser filters (no extra request needed) -->
+      <div class="card card-pad mb-24">
+        <div class="form-grid" style="grid-template-columns:1.4fr 1fr auto;align-items:end">
+          <div class="field">
+            <label for="fKeyword">Keyword</label>
+            <input id="fKeyword" type="search" placeholder="Run, gala, auction..." ng-model="filters.keyword">
+          </div>
+          <div class="field">
+            <label for="fCategory">Category</label>
+            <select id="fCategory" ng-model="filters.category_id"
+                    ng-options="c.category_id as c.category_name for c in categories">
+              <option value="">All categories</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button class="btn btn-outline" type="button" ng-click="resetFilters()">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row-between mb-16">
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" type="button"
+                  ng-class="tab === 'upcoming' ? 'btn-primary' : 'btn-outline'"
+                  ng-click="setTab('upcoming')">Upcoming ({{ upcoming.length }})</button>
+          <button class="btn btn-sm" type="button"
+                  ng-class="tab === 'past' ? 'btn-primary' : 'btn-outline'"
+                  ng-click="setTab('past')">Past ({{ past.length }})</button>
+        </div>
+        <span class="muted" style="font-size:.86rem">{{ upcoming.length + past.length }} event(s) in total</span>
+      </div>
+
+      <div class="spinner" ng-if="loading"></div>
+      <div class="alert alert-danger" ng-if="error">{{ error }}</div>
+
+      <div ng-if="tab === 'upcoming'">
+        <div class="event-grid">
+          <event-card ng-repeat="event in upcoming" evt="event"></event-card>
+        </div>
+        <div class="empty-state" ng-if="!loading && !upcoming.length">
+          <div class="ico">🔍</div>
+          <p>No upcoming events match your filters.</p>
+        </div>
+      </div>
+
+      <div ng-if="tab === 'past'">
+        <div class="event-grid">
+          <event-card ng-repeat="event in past" evt="event"></event-card>
+        </div>
+        <div class="empty-state" ng-if="!loading && !past.length">
+          <div class="ico">🗓️</div>
+          <p>No past events match your filters.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <site-footer></site-footer>
+  <back-to-top></back-to-top>
+
+  <script src="src/js/vendor/angular.min.js"></script>
+  <script src="src/js/vendor/angular-route.min.js"></script>
+  <script src="src/js/app.config.js"></script>
+  <script src="src/js/services/event.service.js"></script>
+  <script src="src/js/directives/helpers.js"></script>
+  <script src="src/js/directives/event-card.js"></script>
+  <script src="src/js/controllers/nav.controller.js"></script>
+  <script src="src/js/controllers/event-list.controller.js"></script>
+</body>
+</html>

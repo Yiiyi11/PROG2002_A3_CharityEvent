@@ -1,0 +1,27 @@
+<!-- ===========================================================================
+     ngRoute view: /#!/weather
+     Seven day forecast for the first event that has coordinates stored.
+     =========================================================================== -->
+<div class="container">
+  <div class="section-head">
+    <div>
+      <div class="eyebrow">AngularJS route</div>
+      <h2>Weather for {{ place.event_name || 'the next venue' }}</h2>
+      <p>Forecast data is requested from the external Open-Meteo API using the venue coordinates.</p>
+    </div>
+    <a class="btn btn-outline" href="weather.html">Open the full weather page</a>
+  </div>
+
+  <div class="spinner" ng-if="loading"></div>
+  <div class="alert alert-danger" ng-if="error">{{ error }}</div>
+
+  <div class="weather-strip">
+    <div class="weather-day" ng-repeat="day in days">
+      <div class="d">{{ day.weekday }}</div>
+      <div class="d" style="font-weight:600;text-transform:none;letter-spacing:0">{{ day.shortDate }}</div>
+      <div class="ico">{{ day.icon }}</div>
+      <div class="t">{{ day.max }}° <small>/ {{ day.min }}°</small></div>
+      <div class="desc">{{ day.description }}</div>
+    </div>
+  </div>
+</div>

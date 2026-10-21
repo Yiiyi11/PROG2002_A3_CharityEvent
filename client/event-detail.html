@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="charityApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Detail | Community Hope Foundation</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body ng-controller="EventDetailController">
+
+  <site-header></site-header>
+
+  <div class="container" style="padding-top:26px">
+    <a href="events.html" class="muted" style="font-size:.88rem">← Back to all events</a>
+  </div>
+
+  <div class="spinner" ng-if="loading"></div>
+
+  <div class="container mt-16" ng-if="error && !loading">
+    <div class="alert alert-danger">{{ error }}</div>
+    <a class="btn btn-outline mt-16" href="events.html">Browse events</a>
+  </div>
+
+  <main class="container mt-16" ng-if="event && !loading">
+
+    <!-- ============================ HERO ============================ -->
+    <div class="detail-hero">
+      <img ng-if="event.event_image_url && !imgFailed" ng-src="src/assets/{{ event.event_image_url }}"
+           alt="{{ event.event_name }}" ng-error="imgFailed = true">
+      <div class="veil"></div>
+      <div class="inner">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <span class="tag" ng-class="{ 'tag-past': event.status === 'Past', 'tag-active': event.status === 'Active' }">
+            {{ event.status === 'Active' ? 'Upcoming event' : event.status }}
+          </span>
+          <span class="tag">{{ event.category_name }}</span>
+        </div>
+        <h1>{{ event.event_name }}</h1>
+        <div class="meta">
+          <span>📅 {{ util.formatDateTime(event.event_date) }}</span>
+          <span>📍 {{ event.location }}</span>
+          <span>🎟 {{ event.registration_count }} registration(s) · {{ event.tickets_sold }} ticket(s) sold</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2 mt-24">
+
+      <!-- ============================ LEFT ============================ -->
+      <div class="stack">
+
+        <!-- description + facts -->
+        <div class="card card-pad">
+          <h2 style="font-size:1.2rem" class="mb-16">About this event</h2>
+          <p class="muted" style="line-height:1.75">{{ event.description }}</p>
+
+          <hr style="border:0;border-top:1px solid var(--rule);margin:22px 0">
+
+          <dl class="kv">
+            <dt>Organised by</dt>
+            <dd>{{ event.org_name }}</dd>
+            <dt>Category</dt>
+            <dd>{{ event.category_name }}</dd>
+            <dt>Venue</dt>
+            <dd>{{ event.location }}</dd>
+            <dt>Date and time</dt>
+            <dd>{{ util.formatDateTime(event.event_date) }} ({{ util.relative(event.event_date) }})</dd>
+            <dt>Ticket price</dt>
+            <dd>{{ event.ticket_price > 0 ? util.money(event.ticket_price) + ' per ticket' : 'Free entry' }}</dd>
+            <dt>Capacity</dt>
+            <dd>{{ event.tickets_sold }} sold · {{ event.seats_remaining }} of {{ event.capacity }} seats remaining</dd>
+          </dl>
+
+          <div class="mt-24">
+            <div class="row-between" style="font-size:.86rem;margin-bottom:6px">
+              <span class="muted">Fundraising progress</span>
+              <strong>{{ util.moneyShort(event.current_progress) }} / {{ util.moneyShort(event.charity_goal) }}
+                ({{ event.progress_percent }}%)</strong>
+            </div>
+            <div class="progress" style="height:10px"><i ng-style="{ width: event.progress_percent + '%' }"></i></div>
+          </div>
+        </div>
+
+        <!-- ============ NEW IN A3: purchased ticket list ============ -->
+        <div class="card card-pad">
+          <div class="row-between mb-16">
+            <div>
+              <h2 style="font-size:1.2rem">Tickets purchased for this event</h2>
+              <p class="muted" style="font-size:.86rem;margin-top:2px">
+                Newest purchase first — returned together with the event by
+                <code>GET /api/events/{{ event.event_id }}</code>.
+              </p>
+            </div>
+            <span class="tag tag-info">{{ event.registrations.length }} record(s)</span>
+          </div>
+
+          <div class="alert alert-info mb-16" ng-if="event.status === 'Past'">
+            This event has already taken place. The list is a historical record of the tickets sold.
+          </div>
+
+          <div ng-if="event.registrations.length">
+            <div class="registration-item" ng-repeat="reg in event.registrations">
+              <div class="avatar">{{ util.initials(reg.user_name) }}</div>
+              <div style="flex:1">
+                <div class="row-between" style="align-items:flex-start">
+                  <div>
+                    <div class="who">{{ reg.user_name }}</div>
+                    <div class="muted" style="font-size:.82rem">
+                      {{ reg.user_email }} · {{ reg.user_phone }}
+                    </div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-weight:800;color:var(--ink)">{{ reg.ticket_quantity }} × ticket</div>
+                    <div class="muted" style="font-size:.78rem">{{ util.money(reg.total_amount) }}</div>
+                  </div>
+                </div>
+                <div class="muted" style="font-size:.78rem;margin-top:4px">
+                  Purchased {{ util.formatDateTime(reg.registration_date) }}
+                  <span ng-if="reg.notes"> · “{{ reg.notes }}”</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" ng-if="!event.registrations.length" style="padding:36px 10px">
+            <div class="ico">🎫</div>
+            <p>No tickets have been purchased for this event yet. Be the first to register!</p>
+          </div>
+        </div>
+
+        <!-- ============ weather from the external API ============ -->
+        <div class="card card-pad">
+          <div class="row-between mb-16">
+            <div>
+              <h2 style="font-size:1.2rem">Weather at the venue</h2>
+              <p class="muted" style="font-size:.86rem;margin-top:2px">
+                Live forecast from <strong>api.open-meteo.com</strong> using the event coordinates
+                ({{ event.latitude }}, {{ event.longitude }}).
+              </p>
+            </div>
+            <span class="tag tag-info">Open-Meteo</span>
+          </div>
+
+          <div class="spinner" ng-if="weatherLoading"></div>
+          <div class="alert alert-warning" ng-if="weatherError">{{ weatherError }}</div>
+
+          <div ng-if="weather && !weatherLoading">
+            <div class="alert alert-info mb-16" ng-if="eventDayWeather">
+              <span>🌤️</span>
+              <span>
+                <strong>{{ eventDayWeather.weekday }} {{ eventDayWeather.shortDate }}</strong> (event day):
+                {{ eventDayWeather.description }}, {{ eventDayWeather.min }}°–{{ eventDayWeather.max }}°,
+                {{ eventDayWeather.rainChance !== null ? eventDayWeather.rainChance + '% chance of rain' : 'rain probability unavailable' }}.
+              </span>
+            </div>
+            <div class="alert alert-warning mb-16" ng-if="!eventDayWeather">
+              The event is further than seven days away, so only the coming week can be forecast.
+            </div>
+
+            <div class="weather-strip">
+              <div class="weather-day" ng-repeat="day in weather.days"
+                   ng-class="{ today: eventDayWeather && day.date === eventDayWeather.date }">
+                <div class="d">{{ day.weekday }}</div>
+                <div class="d" style="font-weight:600;text-transform:none;letter-spacing:0">{{ day.shortDate }}</div>
+                <div class="ico">{{ day.icon }}</div>
+                <div class="t">{{ day.max }}° <small>/ {{ day.min }}°</small></div>
+                <div class="desc">{{ day.description }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================ RIGHT ============================ -->
+      <div class="stack" style="align-self:start">
+
+        <div class="card card-pad">
+          <h2 style="font-size:1.1rem" class="mb-8">Reserve your place</h2>
+          <p class="muted" style="font-size:.88rem">
+            {{ event.ticket_price > 0 ? util.money(event.ticket_price) + ' per ticket.' : 'This event is free.' }}
+            {{ event.seats_remaining }} seat(s) left.
+          </p>
+
+          <div class="mt-16">
+            <a class="btn btn-accent btn-block"
+               ng-if="event.status === 'Active' && event.seats_remaining > 0"
+               ng-href="register.html?id={{ event.event_id }}">
+              Register for this event
+            </a>
+            <button class="btn btn-block" type="button" disabled
+                    ng-if="event.status === 'Active' && event.seats_remaining <= 0">
+              Sold out
+            </button>
+            <button class="btn btn-block" type="button" disabled ng-if="event.status === 'Past'">
+              Registrations closed
+            </button>
+          </div>
+
+          <p class="muted mt-16" style="font-size:.78rem">
+            You will review the event details and enter your contact information on the next page.
+          </p>
+        </div>
+
+        <div class="card card-pad">
+          <h3 style="font-size:1rem" class="mb-8">Organisation</h3>
+          <p style="font-weight:700;color:var(--ink)">{{ event.org_name }}</p>
+          <p class="muted" style="font-size:.86rem">{{ event.org_mission }}</p>
+          <p class="muted mt-8" style="font-size:.86rem">✉️ {{ event.org_email }}</p>
+        </div>
+
+        <div class="card card-pad">
+          <h3 style="font-size:1rem" class="mb-8">Event summary</h3>
+          <dl class="kv" style="grid-template-columns:1fr auto">
+            <dt>Tickets sold</dt><dd>{{ event.tickets_sold }}</dd>
+            <dt>Registrations</dt><dd>{{ event.registration_count }}</dd>
+            <dt>Seats remaining</dt><dd>{{ event.seats_remaining }}</dd>
+            <dt>Ticket value</dt><dd>{{ util.money(event.tickets_sold * event.ticket_price) }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <site-footer></site-footer>
+  <back-to-top></back-to-top>
+
+  <script src="src/js/vendor/angular.min.js"></script>
+  <script src="src/js/vendor/angular-route.min.js"></script>
+  <script src="src/js/app.config.js"></script>
+  <script src="src/js/services/event.service.js"></script>
+  <script src="src/js/services/weather.service.js"></script>
+  <script src="src/js/directives/helpers.js"></script>
+  <script src="src/js/controllers/nav.controller.js"></script>
+  <script src="src/js/controllers/event-detail.controller.js"></script>
+</body>
+</html>
