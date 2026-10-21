@@ -1,0 +1,21 @@
+{
+  "name": "prog2002-a3-charity-events-api",
+  "version": "3.0.0",
+  "private": true,
+  "description": "PROG2002 Assessment 3 - Charity Events (Node.js + Express + AngularJS + MySQL), cPanel deployment build",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Yiiyi11, zhou123445",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.11.0"
+  }
+}

@@ -1,0 +1,27 @@
+Yiiyi11A3-cpanel deployment package - file manifest
+Generated: 2026-10-21
+Total files: 77
+
+== Per-folder counts ==
+api : 9 files
+client : 42 files
+admin : 19 files
+root files: 7 (incl. hidden .env.example)
+
+== Key files that MUST exist after upload ==
+OK   app.js
+OK   package.json
+OK   charityevents_db-cpanel.sql
+OK   api/server.js
+OK   api/event_db.js
+OK   api/routes/events.js
+OK   api/routes/registrations.js
+OK   api/utils/validation.js
+OK   client/index.html
+OK   client/src/js/app.config.js
+OK   client/src/js/vendor/angular.min.js
+OK   client/src/js/vendor/angular-route.min.js
+OK   client/src/assets/img/run.jpg
+OK   admin/index.html
+OK   admin/src/js/admin-app.js
+OK   admin/src/js/vendor/angular-route.min.js

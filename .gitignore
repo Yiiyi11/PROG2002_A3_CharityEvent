@@ -25,3 +25,7 @@ coverage/
 dist/
 .tmp/
 screenshots/
+
+# local build outputs — zips are delivered outside git
+deliverables/
+pkg/
