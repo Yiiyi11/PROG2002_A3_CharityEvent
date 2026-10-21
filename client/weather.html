@@ -34,7 +34,7 @@
           <div class="stack">
             <button class="card card-pad" type="button" ng-repeat="evt in events"
                     ng-click="select(evt)"
-                    style="text-align:left;cursor:pointer;border-color:{{ selected.event_id === evt.event_id ? '#2f6fb2' : 'var(--rule)' }};box-shadow:{{ selected.event_id === evt.event_id ? '0 0 0 3px rgba(47,111,178,.14)' : 'none' }}">
+                    style="text-align:left;cursor:pointer;border-color:{{ selected.event_id === evt.event_id ? 'var(--accent)' : 'var(--rule)' }};box-shadow:{{ selected.event_id === evt.event_id ? '0 0 0 2px rgba(168,57,26,.18)' : 'none' }}">
               <div class="row-between">
                 <strong style="color:var(--ink)">{{ evt.event_name }}</strong>
                 <span class="tag tag-info">{{ evt.category_name }}</span>
@@ -116,7 +116,7 @@
 
       <div class="card card-pad mt-32">
         <h3 style="font-size:1rem" class="mb-8">The request that is sent</h3>
-        <pre style="background:#0f2237;color:#d7e6f5;padding:16px;border-radius:0;overflow-x:auto;font-size:.8rem;line-height:1.7">https://api.open-meteo.com/v1/forecast
+        <pre>https://api.open-meteo.com/v1/forecast
     ?latitude={{ selected.latitude }}&amp;longitude={{ selected.longitude }}
     &amp;daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max
     &amp;timezone=Australia%2FSydney
