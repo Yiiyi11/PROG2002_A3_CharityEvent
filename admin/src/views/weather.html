@@ -1,0 +1,53 @@
+<!-- ======================== ADMIN · WEATHER CHECK ======================== -->
+<div class="panel">
+  <div class="panel-head">
+    <div>
+      <h2>External weather API diagnostics</h2>
+      <p>Sends the stored venue coordinates to <code>api.open-meteo.com</code> and reports the response.</p>
+    </div>
+    <button class="btn btn-primary btn-sm" type="button" ng-click="checkAll()">Check all venues</button>
+  </div>
+
+  <div class="spinner" ng-if="loading"></div>
+  <div class="alert alert-danger" ng-if="error" style="margin:20px">{{ error }}</div>
+
+  <div class="panel-body flush" ng-if="!loading">
+    <div class="table-wrap" style="border:0;border-radius:0">
+      <table class="data">
+        <thead>
+          <tr><th>Event</th><th>Venue</th><th>Coordinates</th><th>Result</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="e in events">
+            <td><strong>{{ e.event_name }}</strong></td>
+            <td class="muted">{{ e.location }}</td>
+            <td class="muted" style="font-size:.8rem">
+              <span ng-if="e.latitude !== null">{{ e.latitude }}, {{ e.longitude }}</span>
+              <span ng-if="e.latitude === null" style="color:#c0392b">missing</span>
+            </td>
+            <td>
+              <span class="muted" ng-if="!results[e.event_id]">Not checked yet</span>
+              <span class="muted" ng-if="results[e.event_id].loading">Checking…</span>
+              <span ng-if="results[e.event_id].error" style="color:#c0392b;font-size:.82rem">
+                ⛔ {{ results[e.event_id].error }}
+              </span>
+              <span ng-if="results[e.event_id].max !== undefined" style="font-size:.82rem">
+                ✓ Today {{ results[e.event_id].min }}° – {{ results[e.event_id].max }}°C
+                (WMO code {{ results[e.event_id].code }}, tz {{ results[e.event_id].timezone }})
+              </span>
+            </td>
+            <td>
+              <button class="icon-btn" type="button" ng-click="check(e)">Test</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="alert alert-info" style="font-size:.84rem">
+  <span>ℹ️</span>
+  <span>The client website uses the same API to show a seven day forecast on each event detail page and on the
+    dedicated Weather page. Events without coordinates simply show a friendly message instead.</span>
+</div>

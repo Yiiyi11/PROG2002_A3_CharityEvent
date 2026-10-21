@@ -1,0 +1,66 @@
+<!-- ====================== ADMIN · REGISTRATIONS ====================== -->
+<div class="panel">
+  <div class="panel-head">
+    <div>
+      <h2>All registrations</h2>
+      <p>Every ticket purchase recorded in the <code>registrations</code> table, newest first.</p>
+    </div>
+    <a class="btn btn-outline btn-sm" href="#!/events">Manage events</a>
+  </div>
+
+  <div class="toolbar">
+    <select ng-model="eventFilter" ng-options="e.event_id as e.event_name for e in events" style="max-width:300px">
+      <option value="">All events</option>
+    </select>
+    <input type="search" placeholder="Search name, email or event…" ng-model="search">
+    <div class="spacer"></div>
+    <span class="muted" style="font-size:.8rem">
+      {{ totals().rows }} row(s) · {{ totals().tickets }} ticket(s) · {{ fmt.money(totals().value) }}
+    </span>
+  </div>
+
+  <div class="spinner" ng-if="loading"></div>
+  <div class="alert alert-danger" ng-if="error" style="margin:20px">{{ error }}</div>
+
+  <div class="panel-body flush" ng-if="!loading && !error">
+    <div class="table-wrap" style="border:0;border-radius:0">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Ref</th><th>Supporter</th><th>Contact</th><th>Event</th>
+            <th>Tickets</th><th>Total</th><th>Registered</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="reg in visible()">
+            <td class="muted">#{{ reg.registration_id }}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:9px">
+                <span class="avatar" style="width:30px;height:30px;font-size:.7rem">{{ fmt.initials(reg.user_name) }}</span>
+                <strong>{{ reg.user_name }}</strong>
+              </div>
+            </td>
+            <td class="muted" style="font-size:.8rem">
+              {{ reg.user_email }}<br>{{ reg.user_phone }}
+            </td>
+            <td>
+              {{ reg.event_name }}
+              <div class="muted" style="font-size:.74rem">{{ reg.category_name }}</div>
+            </td>
+            <td><strong>{{ reg.ticket_quantity }}</strong></td>
+            <td>{{ fmt.money(reg.total_amount) }}</td>
+            <td class="muted" style="white-space:nowrap">{{ fmt.dateTime(reg.registration_date) }}</td>
+            <td>
+              <button class="icon-btn danger" type="button" ng-click="remove(reg)">Remove</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" ng-if="!visible().length">
+      <div class="ico">🎟️</div>
+      <p>No registrations match this filter.</p>
+    </div>
+  </div>
+</div>

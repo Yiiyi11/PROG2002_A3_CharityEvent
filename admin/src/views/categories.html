@@ -1,0 +1,90 @@
+<!-- ======================= ADMIN · CATEGORIES ======================= -->
+<div class="grid-2" style="grid-template-columns:1fr 1.4fr">
+
+  <!-- ------------------------------ create form ------------------------------ -->
+  <form class="panel" ng-submit="create()" novalidate>
+    <div class="panel-head">
+      <div>
+        <h2>New category</h2>
+        <p>Calls POST /api/categories</p>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="alert alert-danger" ng-if="formError">{{ formError }}</div>
+
+      <div class="field mb-16">
+        <label for="catName">Category name <span class="req">*</span></label>
+        <input id="catName" type="text" ng-model="newCategory.category_name" maxlength="100"
+               placeholder="e.g. Trivia Night">
+        <span class="err" ng-if="fieldErrors.category_name">{{ fieldErrors.category_name }}</span>
+      </div>
+
+      <div class="field">
+        <label for="catDesc">Description</label>
+        <textarea id="catDesc" ng-model="newCategory.description" maxlength="255" style="min-height:80px"
+                  placeholder="Short description shown on the categories page"></textarea>
+        <span class="err" ng-if="fieldErrors.description">{{ fieldErrors.description }}</span>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit" ng-disabled="saving">
+          {{ saving ? 'Creating…' : 'Create category' }}
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- ------------------------------ category list ------------------------------ -->
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Existing categories</h2>
+        <p>Deleting a category that still has events is blocked by the API.</p>
+      </div>
+      <span class="tag tag-info">{{ categories.length }}</span>
+    </div>
+
+    <div class="spinner" ng-if="loading"></div>
+    <div class="alert alert-danger" ng-if="error" style="margin:20px">{{ error }}</div>
+
+    <div class="panel-body flush" ng-if="!loading">
+      <div class="table-wrap" style="border:0;border-radius:0">
+        <table class="data">
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Description</th><th>Events</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="cat in categories">
+              <td class="muted">{{ cat.category_id }}</td>
+              <td>
+                <input ng-if="editing && editing.category_id === cat.category_id"
+                       type="text" ng-model="editing.category_name" style="max-width:180px">
+                <strong ng-if="!(editing && editing.category_id === cat.category_id)">{{ cat.category_name }}</strong>
+              </td>
+              <td class="muted" style="font-size:.84rem">
+                <input ng-if="editing && editing.category_id === cat.category_id"
+                       type="text" ng-model="editing.description">
+                <span ng-if="!(editing && editing.category_id === cat.category_id)">
+                  {{ cat.description || '—' }}
+                </span>
+              </td>
+              <td>
+                <span class="tag" ng-class="cat.event_count > 0 ? 'tag-info' : 'tag-past'">{{ cat.event_count }}</span>
+              </td>
+              <td>
+                <div class="actions" ng-if="!(editing && editing.category_id === cat.category_id)">
+                  <button class="icon-btn" type="button" ng-click="startEdit(cat)">Edit</button>
+                  <button class="icon-btn danger" type="button" ng-click="remove(cat)">Delete</button>
+                </div>
+                <div class="actions" ng-if="editing && editing.category_id === cat.category_id">
+                  <button class="icon-btn" type="button" ng-click="update()">Save</button>
+                  <button class="icon-btn" type="button" ng-click="cancelEdit()">Cancel</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
