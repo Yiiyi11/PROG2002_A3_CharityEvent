@@ -29,3 +29,8 @@ screenshots/
 # local build outputs — zips are delivered outside git
 deliverables/
 pkg/
+
+# deploy/ holds the cPanel kit only; api|client|admin inside are build copies
+deploy/cpanel/api/
+deploy/cpanel/client/
+deploy/cpanel/admin/
