@@ -1,0 +1,110 @@
+<!-- ======================= ADMIN · MANAGE EVENTS ======================= -->
+<div class="panel">
+  <div class="panel-head">
+    <div>
+      <h2>All charity events</h2>
+      <p>Active, past and suspended events returned by <code>GET /api/events</code>.</p>
+    </div>
+    <a class="btn btn-primary btn-sm" href="#!/events/new">+ Create new event</a>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-sm" type="button" ng-repeat="status in statuses"
+            ng-class="statusFilter === status ? 'btn-primary' : 'btn-outline'"
+            ng-click="statusFilter = status">
+      {{ status }} ({{ counts()[status] }})
+    </button>
+    <div class="spacer"></div>
+    <input type="search" placeholder="Search name, location, category…" ng-model="search">
+  </div>
+
+  <div class="spinner" ng-if="loading"></div>
+  <div class="alert alert-danger" ng-if="error" style="margin:20px">{{ error }}</div>
+
+  <div class="panel-body flush" ng-if="!loading && !error">
+    <div class="table-wrap" style="border:0;border-radius:0">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>#</th><th>Event</th><th>Category</th><th>Date &amp; time</th>
+            <th>Status</th><th>Capacity</th><th>Registrations</th><th>Raised</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="e in visibleEvents()">
+            <td class="muted">{{ e.event_id }}</td>
+            <td style="min-width:220px">
+              <strong>{{ e.event_name }}</strong>
+              <div class="muted" style="font-size:.76rem">📍 {{ e.location }}</div>
+            </td>
+            <td>{{ e.category_name }}</td>
+            <td class="muted" style="white-space:nowrap">{{ fmt.dateTime(e.event_date) }}</td>
+            <td>
+              <span class="tag" ng-class="{ 'tag-active': e.status === 'Active', 'tag-past': e.status === 'Past', 'tag-suspended': e.status === 'Suspended' }">
+                {{ e.status }}
+              </span>
+            </td>
+            <td>
+              {{ e.tickets_sold }} / {{ e.capacity }}
+              <div class="progress" style="margin-top:4px;width:90px">
+                <i ng-style="{ width: (e.tickets_sold / e.capacity * 100) + '%' }"></i>
+              </div>
+            </td>
+            <td>
+              <strong>{{ e.registration_count }}</strong>
+              <span class="muted" style="font-size:.76rem">record(s)</span>
+            </td>
+            <td>{{ fmt.moneyShort(e.current_progress) }}</td>
+            <td>
+              <div class="actions">
+                <a class="icon-btn" ng-href="#!/events/{{ e.event_id }}">Edit</a>
+                <button class="icon-btn danger" type="button" ng-click="askDelete(e)">Delete</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" ng-if="!visibleEvents().length">
+      <div class="ico">📭</div>
+      <p>No events match this filter.</p>
+    </div>
+  </div>
+</div>
+
+<div class="alert alert-info" style="font-size:.84rem">
+  <span>ℹ️</span>
+  <span><strong>Delete rule:</strong> an event can only be removed when it has no registrations. If tickets have
+    already been sold the API responds with HTTP 409 and the deletion is blocked, which keeps the
+    <code>registrations</code> table referentially valid.</span>
+</div>
+
+<!-- ------------------------- confirm delete modal ------------------------- -->
+<div class="modal-backdrop" ng-if="deleteTarget">
+  <div class="modal-box">
+    <h3>Delete this event?</h3>
+
+    <p class="muted mt-8" ng-if="!blocked">
+      You are about to permanently delete <strong>{{ deleteTarget.event_name }}</strong>
+      ({{ deleteTarget.registration_count }} registration(s)).
+    </p>
+
+    <div class="alert alert-danger mt-16" ng-if="blocked">
+      <span>⛔</span>
+      <span>{{ blocked.message }}</span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" type="button" ng-click="cancelDelete()">
+        {{ blocked ? 'Close' : 'Cancel' }}
+      </button>
+      <a class="btn btn-primary" ng-href="#!/events/{{ deleteTarget.event_id }}"
+         ng-if="blocked" ng-click="cancelDelete()">Edit instead</a>
+      <button class="btn btn-danger" type="button" ng-if="!blocked"
+              ng-click="confirmDelete()" ng-disabled="deleting">
+        {{ deleting ? 'Deleting…' : 'Yes, delete' }}
+      </button>
+    </div>
+  </div>
+</div>

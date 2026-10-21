@@ -1,0 +1,222 @@
+<!-- ================== ADMIN · CREATE / EDIT EVENT FORM ================== -->
+<div class="spinner" ng-if="loading"></div>
+<div class="alert alert-danger" ng-if="loadError">{{ loadError }}</div>
+
+<div ng-if="event && !loading">
+
+  <div class="row-between mb-16">
+    <p class="muted" style="font-size:.88rem">
+      {{ mode === 'create'
+          ? 'Sends a POST request to /api/events after the form is validated.'
+          : 'Sends a PUT request to /api/events/' + event.event_id + '.' }}
+    </p>
+    <a class="btn btn-outline btn-sm" href="#!/events">← Back to event list</a>
+  </div>
+
+  <div class="alert alert-danger" ng-if="submitError">{{ submitError }}</div>
+
+  <div class="grid-2" style="grid-template-columns:1.55fr 1fr">
+
+    <!-- ============================== FORM ============================== -->
+    <form name="eventForm" class="panel form-panel" ng-submit="save()" novalidate>
+      <div class="panel-head">
+        <h2>{{ mode === 'create' ? 'New charity event' : 'Edit: ' + event.event_name }}</h2>
+        <span class="tag tag-info">{{ mode === 'create' ? 'CREATE' : 'UPDATE' }}</span>
+      </div>
+
+      <div class="panel-body">
+        <div class="form-grid">
+
+          <div class="form-section-title full">Event identity</div>
+
+          <div class="field full">
+            <label for="evName">Event name <span class="req">*</span></label>
+            <input id="evName" name="event_name" type="text" ng-model="event.event_name"
+                   required maxlength="200" placeholder="e.g. Spring Charity Fun Run 2027">
+            <span class="err" ng-if="fieldErrors.event_name">{{ fieldErrors.event_name }}</span>
+          </div>
+
+          <div class="field">
+            <label for="evOrg">Organising charity <span class="req">*</span></label>
+            <select id="evOrg" name="org_id" ng-model="event.org_id" required
+                    ng-options="o.org_id as o.org_name for o in organisations">
+              <option value="">Select an organisation</option>
+            </select>
+            <span class="err" ng-if="fieldErrors.org_id">{{ fieldErrors.org_id }}</span>
+          </div>
+
+          <div class="field">
+            <label for="evCat">Category <span class="req">*</span></label>
+            <select id="evCat" name="category_id" ng-model="event.category_id" required
+                    ng-options="c.category_id as c.category_name for c in categories">
+              <option value="">Select a category</option>
+            </select>
+            <span class="err" ng-if="fieldErrors.category_id">{{ fieldErrors.category_id }}</span>
+          </div>
+
+          <div class="field full">
+            <label for="evDesc">Description <span class="req">*</span></label>
+            <textarea id="evDesc" name="description" ng-model="event.description" required
+                      minlength="15" placeholder="What happens at the event and where does the money go?"></textarea>
+            <span class="err" ng-if="fieldErrors.description">{{ fieldErrors.description }}</span>
+          </div>
+
+          <div class="form-section-title full">Schedule and place</div>
+
+          <div class="field">
+            <label for="evDate">Date and time <span class="req">*</span></label>
+            <input id="evDate" name="event_date" type="datetime-local" ng-model="event.eventDate"
+                   ng-model-options="{ allowInvalid: false }" required>
+            <span class="err" ng-if="fieldErrors.event_date">{{ fieldErrors.event_date }}</span>
+          </div>
+
+          <div class="field">
+            <label for="evLoc">Venue / location <span class="req">*</span></label>
+            <input id="evLoc" name="location" type="text" ng-model="event.location" required
+                   placeholder="e.g. South Bank Parklands, Brisbane QLD">
+            <span class="err" ng-if="fieldErrors.location">{{ fieldErrors.location }}</span>
+          </div>
+
+          <div class="field full">
+            <label for="evPreset">Coordinate preset <span class="hint" style="font-weight:400">(fills latitude/longitude)</span></label>
+            <select id="evPreset" ng-model="preset" ng-change="applyPreset(preset)"
+                    ng-options="p as p.name for p in locationPresets">
+              <option value="">— choose a venue preset —</option>
+            </select>
+            <span class="hint">Coordinates are required for the Open-Meteo weather forecast.</span>
+          </div>
+
+          <div class="field">
+            <label for="evLat">Latitude</label>
+            <input id="evLat" name="latitude" type="number" step="0.000001" ng-model="event.latitude"
+                   placeholder="-27.481000">
+            <span class="err" ng-if="fieldErrors.latitude">{{ fieldErrors.latitude }}</span>
+          </div>
+
+          <div class="field">
+            <label for="evLng">Longitude</label>
+            <input id="evLng" name="longitude" type="number" step="0.000001" ng-model="event.longitude"
+                   placeholder="153.023000">
+            <span class="err" ng-if="fieldErrors.longitude">{{ fieldErrors.longitude }}</span>
+          </div>
+
+          <div class="form-section-title full">Tickets and fundraising</div>
+
+          <div class="field">
+            <label for="evPrice">Ticket price (AUD) <span class="req">*</span></label>
+            <input id="evPrice" name="ticket_price" type="number" min="0" step="0.01"
+                   ng-model="event.ticket_price" required>
+            <span class="hint">Use 0 for a free event.</span>
+            <span class="err" ng-if="fieldErrors.ticket_price">{{ fieldErrors.ticket_price }}</span>
+          </div>
+
+          <div class="field">
+            <label for="evCap">Capacity (seats) <span class="req">*</span></label>
+            <input id="evCap" name="capacity" type="number" min="1" step="1" ng-model="event.capacity" required>
+            <span class="hint" ng-if="ticketsSold">{{ ticketsSold }} ticket(s) already sold.</span>
+            <span class="err" ng-if="fieldErrors.capacity">{{ fieldErrors.capacity }}</span>
+          </div>
+
+          <div class="field">
+            <label for="evGoal">Charity goal (AUD) <span class="req">*</span></label>
+            <input id="evGoal" name="charity_goal" type="number" min="0" step="0.01"
+                   ng-model="event.charity_goal" required>
+            <span class="err" ng-if="fieldErrors.charity_goal">{{ fieldErrors.charity_goal }}</span>
+          </div>
+
+          <div class="field">
+            <label for="evProgress">Current progress (AUD)</label>
+            <input id="evProgress" name="current_progress" type="number" min="0" step="0.01"
+                   ng-model="event.current_progress">
+            <span class="err" ng-if="fieldErrors.current_progress">{{ fieldErrors.current_progress }}</span>
+          </div>
+
+          <div class="form-section-title full">Presentation</div>
+
+          <div class="field">
+            <label for="evImg">Event image</label>
+            <select id="evImg" ng-model="event.event_image_url"
+                    ng-options="img.value as img.label for img in imageOptions">
+              <option value="">No image (gradient placeholder)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Visibility</label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:600;padding-top:8px">
+              <input type="checkbox" ng-model="event.is_suspended" style="width:auto">
+              Suspended (hidden from the public site)
+            </label>
+            <span class="hint">Suspended events stay in the admin list but disappear from the client site.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-head" style="border-top:1px solid var(--line);border-bottom:0">
+        <div class="actions">
+          <button class="btn btn-primary" type="submit" ng-disabled="saving">
+            {{ saving ? 'Saving…' : (mode === 'create' ? 'Save event' : 'Save changes') }}
+          </button>
+          <button class="btn btn-outline" type="button" ng-click="reload && reload()">Reload from database</button>
+          <a class="btn btn-outline" href="#!/events">Cancel</a>
+        </div>
+        <span class="muted" style="font-size:.78rem">Fields marked <span class="req">*</span> are required.</span>
+      </div>
+    </form>
+
+    <!-- ============================ SIDEBAR ============================ -->
+    <div>
+      <!-- registrations of the event (edit mode) -->
+      <div class="panel" ng-if="mode === 'edit'">
+        <div class="panel-head">
+          <div>
+            <h2>Registrations for this event</h2>
+            <p>Newest purchase first — GET /api/events/{{ event.event_id }}</p>
+          </div>
+          <span class="tag tag-info">{{ registrations.length }}</span>
+        </div>
+        <div class="panel-body" style="max-height:420px;overflow-y:auto">
+          <div class="registration-item" ng-repeat="reg in registrations">
+            <div class="avatar">{{ fmt.initials(reg.user_name) }}</div>
+            <div style="flex:1">
+              <div class="row-between">
+                <strong>{{ reg.user_name }}</strong>
+                <span style="font-weight:800;color:#1f3a5f">{{ reg.ticket_quantity }} ×</span>
+              </div>
+              <div class="muted" style="font-size:.78rem">{{ reg.user_email }}</div>
+              <div class="muted" style="font-size:.74rem">
+                {{ fmt.dateTime(reg.registration_date) }} · {{ fmt.money(reg.total_amount) }}
+              </div>
+            </div>
+          </div>
+          <div class="empty-state" ng-if="!registrations.length" style="padding:26px 8px">
+            <p>No registrations yet.</p>
+          </div>
+        </div>
+        <div class="panel-head" style="border-top:1px solid var(--line);border-bottom:0">
+          <span class="muted" style="font-size:.8rem">
+            {{ ticketsSold }} ticket(s) sold · {{ seatsRemaining }} seat(s) remaining
+          </span>
+        </div>
+      </div>
+
+      <!-- helper card -->
+      <div class="panel">
+        <div class="panel-head"><h2>Validation rules</h2></div>
+        <div class="panel-body">
+          <ul class="muted" style="font-size:.84rem;padding-left:18px;line-height:1.9">
+            <li>Name at least 3 characters, description at least 15.</li>
+            <li>Organisation and category must exist in the database.</li>
+            <li>Ticket price and goal cannot be negative.</li>
+            <li>Capacity must be ≥ 1 and ≥ the tickets already sold.</li>
+            <li>Latitude and longitude must be supplied as a pair.</li>
+          </ul>
+          <div class="alert alert-warning mt-16" style="font-size:.8rem">
+            The same rules are enforced again in <code>api/utils/validation.js</code>, so the API cannot be
+            bypassed by calling it directly.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
