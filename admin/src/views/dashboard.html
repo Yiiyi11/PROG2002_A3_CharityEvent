@@ -1,0 +1,132 @@
+<!-- ========================== ADMIN DASHBOARD ========================== -->
+<div class="row-between mb-16">
+  <p class="muted" style="font-size:.88rem">Overview of every charity event, registration and category in the database.</p>
+  <span class="muted" style="font-size:.84rem">{{ today }}</span>
+</div>
+
+<div class="spinner" ng-if="loading"></div>
+<div class="alert alert-danger" ng-if="error">{{ error }}</div>
+
+<div ng-if="stats && !loading">
+
+  <!-- ------------------------------ KPI tiles ------------------------------ -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="k">Total events</div>
+      <div class="v">{{ stats.events.total_events }}</div>
+      <div class="d">{{ stats.events.active_events }} active · {{ stats.events.past_events }} past · {{ stats.events.suspended_events }} suspended</div>
+    </div>
+    <div class="kpi accent">
+      <div class="k">Registrations</div>
+      <div class="v">{{ stats.registrations.total_registrations }}</div>
+      <div class="d">{{ stats.registrations.total_tickets }} tickets · {{ stats.registrations.unique_supporters }} supporters</div>
+    </div>
+    <div class="kpi">
+      <div class="k">Raised so far</div>
+      <div class="v">{{ fmt.moneyShort(stats.events.total_raised) }}</div>
+      <div class="d">of {{ fmt.moneyShort(stats.events.total_goal) }} goal</div>
+    </div>
+    <div class="kpi accent">
+      <div class="k">Ticket value</div>
+      <div class="v">{{ fmt.moneyShort(stats.registrations.total_ticket_value) }}</div>
+      <div class="d">Sum of all registration totals</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="grid-template-columns:1.5fr 1fr">
+
+    <!-- --------------------------- recent activity --------------------------- -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Latest registrations</h2>
+          <p>The five most recent ticket purchases, newest first.</p>
+        </div>
+        <a class="btn btn-outline btn-sm" href="#!/registrations">View all</a>
+      </div>
+      <div class="panel-body flush">
+        <div class="table-wrap" style="border:0;border-radius:0">
+          <table class="data">
+            <thead>
+              <tr><th>Supporter</th><th>Event</th><th>Tickets</th><th>Total</th><th>Purchased</th></tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="reg in stats.recentRegistrations">
+                <td>
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <span class="avatar" style="width:30px;height:30px;font-size:.7rem">{{ fmt.initials(reg.user_name) }}</span>
+                    <strong>{{ reg.user_name }}</strong>
+                  </div>
+                </td>
+                <td>{{ reg.event_name }}</td>
+                <td>{{ reg.ticket_quantity }}</td>
+                <td>{{ fmt.money(reg.total_amount) }}</td>
+                <td class="muted">{{ fmt.dateTime(reg.registration_date) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- --------------------------- category split --------------------------- -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Funds by category</h2>
+          <p>Total raised per event category.</p>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div ng-repeat="cat in stats.perCategory" style="margin-bottom:14px">
+          <div class="row-between" style="font-size:.84rem;margin-bottom:4px">
+            <span style="font-weight:600">{{ cat.category_name }}</span>
+            <span class="muted">{{ fmt.moneyShort(cat.raised) }} · {{ cat.event_count }} event(s)</span>
+          </div>
+          <div class="progress"><i ng-style="{ width: barWidth(cat.raised) }"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ------------------------------ event status ------------------------------ -->
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Event status overview</h2>
+        <p>Every event in the database, regardless of status.</p>
+      </div>
+      <a class="btn btn-primary btn-sm" href="#!/events/new">+ Create event</a>
+    </div>
+    <div class="panel-body flush">
+      <div class="table-wrap" style="border:0;border-radius:0">
+        <table class="data">
+          <thead>
+            <tr><th>Event</th><th>Category</th><th>Date</th><th>Status</th><th>Registrations</th><th>Progress</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="e in events | limitTo:8">
+              <td><strong>{{ e.event_name }}</strong><div class="muted" style="font-size:.76rem">{{ e.location }}</div></td>
+              <td>{{ e.category_name }}</td>
+              <td class="muted">{{ fmt.date(e.event_date) }}</td>
+              <td>
+                <span class="tag" ng-class="{ 'tag-active': e.status === 'Active', 'tag-past': e.status === 'Past', 'tag-suspended': e.status === 'Suspended' }">
+                  {{ e.status }}
+                </span>
+              </td>
+              <td>{{ e.registration_count }} / {{ e.tickets_sold }} tickets</td>
+              <td style="min-width:120px">
+                <div class="progress"><i ng-style="{ width: e.progress_percent + '%' }"></i></div>
+                <span class="muted" style="font-size:.74rem">{{ e.progress_percent }}%</span>
+              </td>
+              <td><a class="icon-btn" ng-href="#!/events/{{ e.event_id }}">Edit</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid var(--line);text-align:right">
+        <a class="muted" style="font-size:.84rem" href="#!/events">See all {{ events.length }} events →</a>
+      </div>
+    </div>
+  </div>
+</div>

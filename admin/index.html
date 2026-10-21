@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="adminApp" ng-cloak>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | Charity Events</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/css/admin.css">
+</head>
+<body ng-controller="AdminShellController as shell">
+
+<div class="admin-shell">
+
+  <!-- ============================== SIDEBAR ============================== -->
+  <aside class="admin-sidebar">
+    <div class="logo">
+      <span class="brand-mark">CHF</span>
+      <div>
+        <strong>Charity Events</strong>
+        <small>Staff ledger</small>
+      </div>
+    </div>
+
+    <nav class="admin-nav">
+      <div ng-repeat="item in menu">
+        <div class="group-label" ng-if="item.group">{{ item.group }}</div>
+        <a ng-if="item.path" ng-href="#!{{ item.path }}" ng-class="{ active: isActive(item) }">
+          <span class="ico">{{ item.icon }}</span>{{ item.label }}
+        </a>
+      </div>
+    </nav>
+
+    <div class="foot">
+      PROG2002 · Assessment 3<br>
+      <a href="/index.html">← Public site</a>
+    </div>
+  </aside>
+
+  <!-- =============================== MAIN =============================== -->
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <h1>{{ pageTitle }}</h1>
+        <div class="crumb">Staff ledger · {{ pageTitle }}</div>
+      </div>
+      <div class="right">
+        <span class="tag tag-info">No authentication in this build</span>
+        <div class="admin-user">
+          <span class="avatar">ST</span>
+          <span>Staff</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div ng-view></div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================ TOASTS ============================ -->
+<div class="toast-wrap">
+  <div class="toast" ng-repeat="toast in toasts" ng-class="{ error: toast.type === 'error' }">
+    {{ toast.type === 'error' ? '×' : '·' }} {{ toast.text }}
+  </div>
+</div>
+
+<script src="src/js/vendor/angular.min.js"></script>
+<script src="src/js/vendor/angular-route.min.js"></script>
+<script src="src/js/admin-app.js"></script>
+<script src="src/js/controllers/admin-shell.controller.js"></script>
+<script src="src/js/controllers/dashboard.controller.js"></script>
+<script src="src/js/controllers/admin-event-list.controller.js"></script>
+<script src="src/js/controllers/admin-event-form.controller.js"></script>
+<script src="src/js/controllers/admin-category.controller.js"></script>
+<script src="src/js/controllers/admin-registration.controller.js"></script>
+<script src="src/js/controllers/admin-weather.controller.js"></script>
+</body>
+</html>
